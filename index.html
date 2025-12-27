@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mi Radar AEMET</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100%; } /* Mapa a pantalla completa */
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 1. Inicializar el mapa centrado en España
+        const map = L.map('map').setView([39.5, -3.7], 6); 
+
+        // 2. Añadir capa de mapa base (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=tu_opcional', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        async function cargarRadar() {
+            try {
+                // 3. Leer el archivo generado por la GitHub Action
+                // Añadimos un parámetro de tiempo para evitar que el navegador guarde una versión vieja (cache)
+                const response = await fetch('./radar_data.json?t=' + new Date().getTime());
+                const radarInfo = await response.json();
+
+                // 4. Definir los límites geográficos
+                // Estos valores son los estándar para el radar nacional de AEMET
+                const imageBounds = [
+                    [32.40, -11.50], // Esquina inferior izquierda (Lat, Lon)
+                    [45.30, 6.20]    // Esquina superior derecha (Lat, Lon)
+                ];
+
+                // 5. Añadir la imagen del radar al mapa
+                L.imageOverlay(radarInfo.enlace, imageBounds, {
+                    opacity: 0.6,
+                    interactive: false
+                }).addTo(map);
+                
+                console.log("Radar cargado correctamente:", radarInfo.nombre);
+
+            } catch (error) {
+                console.error("Error: Probablemente el archivo radar_data.json aún no existe. Ejecuta la GitHub Action primero.", error);
+            }
+        }
+
+        // Ejecutar la función al cargar la página
+        cargarRadar();
+    </script>
+</body>
+</html>

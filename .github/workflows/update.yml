@@ -1,0 +1,33 @@
+name: Actualizar Radar AEMET
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Se ejecuta cada 30 minutos
+  workflow_dispatch:      # Permite ejecutarlo manualmente para probar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar script de descarga
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: python update_radar.py
+
+      - name: Guardar cambios en el repo
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add radar_data.json
+          git commit -m "Radar actualizado" || exit 0
+          git push
