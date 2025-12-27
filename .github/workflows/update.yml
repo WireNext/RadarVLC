@@ -28,6 +28,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add radar_data.json
-          git commit -m "Radar actualizado" || exit 0
+          # Añadimos -f para forzar o simplemente nos aseguramos de que no de error si no hay cambios
+          git add -A 
+          git commit -m "Radar actualizado" || echo "No hay cambios para subir"
           git push
